@@ -102,9 +102,11 @@ pub fn main(input_toml: String, year: u32, month: u32) -> Result<(f32, f32, Vec<
                     for (day, money) in value {
                         let day: usize = day
                             .parse()
-                            .expect(&format!("`{}` is not a valid month day", day)); // TODO2 use actual error
+                            .map_err(|_| format!("invalid day of month: `{day}`"))?;
 
-                        let idx = day.checked_add_signed(-1).unwrap(); // TODO2 use actual error
+                        let idx = day
+                            .checked_add_signed(-1)
+                            .ok_or_else(|| format!("first day of month is 1"))?;
 
                         let money = toml_sum(money)?;
 
