@@ -3,24 +3,34 @@ mod parse_bill_toml;
 
 use colored::*; // cargo add colored
 
+enum Progress {
+    Good,
+    Bad,
+}
+
 macro_rules! print_columns_str {
-    ($col_day:expr, $col_exp_day:expr, $col_mpd_adapt:expr, $col_mpd_def:expr) => {
+    ($col_day:expr, $col_exp_day:expr, $col_mpd_adapt:expr, $col_mpd_adapt_progress:expr, $col_mpd_def:expr) => {
         println!(
             "{} | {} | {} | {}",
-            $col_day.truecolor(200, 200, 200),       // .red(),
-            $col_mpd_def.truecolor(150, 150, 0),     // .yellow()
-            $col_exp_day.truecolor(150, 20, 20),     // .green(),
-            $col_mpd_adapt.truecolor(100, 100, 255)  //.blue(),
+            $col_day.truecolor(200, 200, 200),   // .red(),
+            $col_mpd_def.truecolor(150, 150, 0), // .yellow()
+            $col_exp_day.truecolor(150, 20, 20), // .green(),
+            match $col_mpd_adapt_progress {
+                // .truecolor(100, 100, 255) //.blue()
+                Progress::Good => $col_mpd_adapt.truecolor(100, 200, 100),
+                Progress::Bad => $col_mpd_adapt.truecolor(200, 100, 100),
+            }
         );
     };
 }
 
 macro_rules! print_columns_num {
-    ($col_day:expr, $col_exp_day:expr, $col_mpd_adapt:expr, $col_mpd_def:expr) => {
+    ($col_day:expr, $col_exp_day:expr, $col_mpd_adapt:expr, $col_mpd_adapt_progress:expr, $col_mpd_def:expr) => {
         print_columns_str!(
             format!("{:2}", $col_day),
             format!("{:6.2}", $col_exp_day),
             format!("{:7.2}", $col_mpd_adapt),
+            $col_mpd_adapt_progress,
             format!("{:4.2}", $col_mpd_def)
         );
     };
@@ -41,11 +51,14 @@ fn main() -> Result<(), String> {
 
     let mut money_left = income;
 
+    let mut last_money_per_day_adaptive: f32 = 0.0;
+
     // TODO maybe give adaptive a different color based on weather it's an improvement or a regression
     print_columns_str!(
         "day",
         "expenditures",
         "money-per-day-adaptive",
+        Progress::Good,
         "money-per-day-default"
     );
 
@@ -64,8 +77,15 @@ fn main() -> Result<(), String> {
             day,
             expenditure_day,
             money_per_day_adaptive,
+            if last_money_per_day_adaptive > money_per_day_adaptive {
+                Progress::Bad
+            } else {
+                Progress::Good
+            },
             money_per_day_default
         );
+
+        last_money_per_day_adaptive = money_per_day_adaptive;
     }
 
     Ok(())
