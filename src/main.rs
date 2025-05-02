@@ -132,8 +132,7 @@ fn main() -> Result<(), String> {
 
         let col_mpda = if (last_money_per_day_adaptive > money_per_day_adaptive)
             || (money_per_day_adaptive < 0.0)
-            || (money_per_day_adaptive < money_per_day_static)
-        // TODO1 this really should be compared with money-today minus expenditures-today
+            || (money_per_day_adaptive < money_per_day_static - expenditure_day)
         {
             col_mpda_bad
         } else {
