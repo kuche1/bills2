@@ -66,7 +66,7 @@ fn main() -> Result<(), String> {
     println!("MPD -> money-per-day");
     println!("EXP -> expenditures");
     println!("MAV -> median-average");
-
+    println!();
     print_columns_str!(
         "day",
         "EXP",
