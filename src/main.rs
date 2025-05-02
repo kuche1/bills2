@@ -1,7 +1,7 @@
 mod cmdline;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    cmdline::parse()?;
+    let (input_toml, year, month) = cmdline::parse()?;
 
     Ok(())
 }
