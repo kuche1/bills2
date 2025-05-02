@@ -9,31 +9,47 @@ enum Progress {
 }
 
 macro_rules! print_columns_str {
-    ($col_day:expr, $col_exp_day:expr, $col_mpd_adapt:expr, $col_mpd_adapt_progress:expr, $col_mpd_def:expr) => {
+    ($day:expr, $exp_day:expr, $mpd_adapt:expr, $mpd_adapt_progress:expr, $mpd_def:expr, $median:expr) => {
         println!(
-            "| {} | {} | {} | {} |",
-            $col_day.truecolor(200, 200, 200),   // .red(),
-            $col_mpd_def.truecolor(150, 150, 0), // .yellow()
-            $col_exp_day.truecolor(150, 20, 20), // .green(),
-            match $col_mpd_adapt_progress {
+            "| {} | {} | {} | {} | {} |",
+            $day.truecolor(200, 200, 200),   // .red(),
+            $mpd_def.truecolor(150, 150, 0), // .yellow()
+            $exp_day.truecolor(150, 20, 20), // .green(),
+            match $mpd_adapt_progress {
                 // .truecolor(100, 100, 255) //.blue()
-                Progress::Good => $col_mpd_adapt.truecolor(100, 200, 100),
-                Progress::Bad => $col_mpd_adapt.truecolor(200, 100, 100),
-            }
+                Progress::Good => $mpd_adapt.truecolor(100, 200, 100),
+                Progress::Bad => $mpd_adapt.truecolor(200, 100, 100),
+            },
+            $median.truecolor(100, 100, 255)
         );
     };
 }
 
 macro_rules! print_columns_num {
-    ($col_day:expr, $col_exp_day:expr, $col_mpd_adapt:expr, $col_mpd_adapt_progress:expr, $col_mpd_def:expr) => {
+    ($day:expr, $exp_day:expr, $mpd_adapt:expr, $mpd_adapt_progress:expr, $mpd_def:expr, $median:expr) => {
         print_columns_str!(
-            format!("{:2}", $col_day),
-            format!("{:6.2}", $col_exp_day),
-            format!("{:7.2}", $col_mpd_adapt),
-            $col_mpd_adapt_progress,
-            format!("{:4.2}", $col_mpd_def)
+            format!("{:2}", $day),
+            format!("{:6.2}", $exp_day),
+            format!("{:7.2}", $mpd_adapt),
+            $mpd_adapt_progress,
+            format!("{:4.2}", $mpd_def),
+            format!("{:6.2}", $median)
         );
     };
+}
+
+fn calc_median(expenditures: &[f32]) -> f32 {
+    let mut ordered = expenditures.to_vec(); // I hate this, but whatever, we're working with just floats
+    ordered.sort_by(|a, b| a.partial_cmp(b).unwrap());
+
+    let items_to_remove = ordered.len() / 4; // we'll remove the highest 1/4 and the lowest 1/4
+    // println!("dbg: {}", ordered.len());
+    ordered.drain(ordered.len() - items_to_remove..);
+    // println!("dbg: {}", ordered.len());
+    ordered.drain(..items_to_remove);
+    // println!("dbg: {}", ordered.len());
+
+    ordered.iter().sum::<f32>() / ordered.len() as f32
 }
 
 fn main() -> Result<(), String> {
@@ -46,13 +62,16 @@ fn main() -> Result<(), String> {
     // TODO4? put in new module
 
     println!("MPD -> money-per-day");
+    println!("EXP -> expenditures");
+    println!("MAV -> median-average");
 
     print_columns_str!(
         "day",
-        "expenditures",
+        "EXP",
         "MPD-adaptive",
         Progress::Good,
-        "MPD-default"
+        "MPD-default",
+        "EXP-MAV"
     );
 
     // TODO0 also calculate median for each day
@@ -76,6 +95,8 @@ fn main() -> Result<(), String> {
 
         money_left -= expenditure_day;
 
+        let median = calc_median(&expenditures_regular[..day]);
+
         print_columns_num!(
             day,
             expenditure_day,
@@ -85,7 +106,8 @@ fn main() -> Result<(), String> {
             } else {
                 Progress::Good
             },
-            money_per_day_default
+            money_per_day_default,
+            median
         );
 
         last_money_per_day_adaptive = money_per_day_adaptive;
