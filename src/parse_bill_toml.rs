@@ -64,10 +64,13 @@ fn toml_sum(value: Value) -> Result<f32, String> {
     }
 }
 
-pub fn main(input_toml: String, year: u32, month: u32) -> Result<(f32, f32, Vec<f32>), String> {
+pub fn main(
+    input_toml: String,
+    year: u32,
+    month: u32,
+) -> Result<(f32, f32, Vec<f32>, usize), String> {
     let date = chrono::NaiveDate::from_ymd_opt(year.try_into().unwrap(), month, 1).unwrap();
-    let days_in_month = date.days_in_month();
-    let days_in_month_usize: usize = days_in_month.try_into().unwrap();
+    let days_in_month: usize = date.days_in_month().try_into().unwrap();
 
     let bills_data =
         fs::read_to_string(&input_toml).map_err(|_| format!("can't open file `{}`", input_toml))?;
@@ -76,7 +79,7 @@ pub fn main(input_toml: String, year: u32, month: u32) -> Result<(f32, f32, Vec<
 
     let mut income: f32 = 0.0;
     let mut expenditures_monthly: f32 = 0.0;
-    let mut expenditures_regular = vec![0.0_f32; days_in_month_usize];
+    let mut expenditures_regular = vec![0.0_f32; days_in_month];
 
     for (bill_key, bill_value) in bills_data {
         match bill_key.as_str() {
@@ -124,5 +127,10 @@ pub fn main(input_toml: String, year: u32, month: u32) -> Result<(f32, f32, Vec<
         }
     }
 
-    Ok((income, expenditures_monthly, expenditures_regular))
+    Ok((
+        income,
+        expenditures_monthly,
+        expenditures_regular,
+        days_in_month,
+    ))
 }
