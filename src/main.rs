@@ -130,7 +130,11 @@ fn main() -> Result<(), String> {
 
         let mpds_minus_median = money_per_day_static - expenditure_median;
 
-        let col_mpda = if last_money_per_day_adaptive > money_per_day_adaptive {
+        let col_mpda = if (last_money_per_day_adaptive > money_per_day_adaptive)
+            || (money_per_day_adaptive < 0.0)
+            || (money_per_day_adaptive < money_per_day_static)
+        // TODO1 this really should be compared with money-today minus expenditures-today
+        {
             col_mpda_bad
         } else {
             col_mpda_good
@@ -141,7 +145,7 @@ fn main() -> Result<(), String> {
             col_day(&format!("|{day:2}|")),
             col_mpds(&format!("|{money_per_day_static:5.2}|")),
             col_exp(&format!("|{expenditure_day:6.2}|")),
-            col_mpda(&format!("|{money_per_day_adaptive:7.2}|")),
+            col_mpda(&format!("|{money_per_day_adaptive:7.2}|")), // TODO1 would be cool if we added more than just 2 options for color
             col_ema(&format!("|{expenditure_median:6.2}|")),
             col_mpds_apl_ema(&format!("|{mpds_minus_median:7.2}|")),
         );
