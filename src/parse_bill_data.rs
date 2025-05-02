@@ -36,39 +36,35 @@ impl NaiveDateExt for chrono::NaiveDate {
 }
 ///////////// ^^^^^
 
-fn toml_sum(value: Value) -> f32 {
+fn toml_sum(value: Value) -> Result<f32, String> {
     match value {
         Value::String(_) | Value::Boolean(_) | Value::Datetime(_) => {
-            panic!("unsupported value: `{value}`") // TODO2 make into actual proper error
+            return Err(format!("unsupported value: `{value}`"));
         }
 
-        Value::Integer(v) => return v as f32,
+        Value::Integer(v) => return Ok(v as f32),
 
-        Value::Float(v) => return v as f32,
+        Value::Float(v) => return Ok(v as f32),
 
         Value::Array(v) => {
             let mut sum: f32 = 0.0;
             for value in v {
-                sum += toml_sum(value);
+                sum += toml_sum(value)?;
             }
-            return sum;
+            return Ok(sum);
         }
 
         Value::Table(v) => {
             let mut sum: f32 = 0.0;
             for (_key, value) in v {
-                sum += toml_sum(value);
+                sum += toml_sum(value)?;
             }
-            return sum;
+            return Ok(sum);
         }
     }
 }
 
-pub fn main(
-    input_toml: String,
-    year: u32,
-    month: u32,
-) -> Result<(f32, f32, Vec<f32>), Box<dyn std::error::Error>> {
+pub fn main(input_toml: String, year: u32, month: u32) -> Result<(f32, f32, Vec<f32>), String> {
     let date = chrono::NaiveDate::from_ymd_opt(year.try_into().unwrap(), month, 1).unwrap();
     let days_in_month = date.days_in_month();
     let days_in_month_usize: usize = days_in_month.try_into().unwrap();
@@ -85,11 +81,11 @@ pub fn main(
     for (bill_key, bill_value) in bills_data {
         match bill_key.as_str() {
             "INCOME" => {
-                income += toml_sum(bill_value);
+                income += toml_sum(bill_value)?;
             }
 
             "EXPENDITURES-MONTHLY" => {
-                expenditures_monthly += toml_sum(bill_value);
+                expenditures_monthly += toml_sum(bill_value)?;
             }
 
             "EXPENDITURES-REGULAR" => match bill_value {
@@ -99,7 +95,7 @@ pub fn main(
                 | Value::Integer(_)
                 | Value::Float(_)
                 | Value::Array(_) => {
-                    panic!("unsupported value: {bill_value}"); // TODO2 use an actual error
+                    return Err(format!("unsupported value: `{bill_value}`"));
                 }
 
                 Value::Table(value) => {
@@ -110,10 +106,10 @@ pub fn main(
 
                         let idx = day.checked_add_signed(-1).unwrap(); // TODO2 use actual error
 
-                        let money = toml_sum(money);
+                        let money = toml_sum(money)?;
 
                         match expenditures_regular.get_mut(idx) {
-                            None => return Err(format!("invalid day of month: `{}`", day).into()),
+                            None => return Err(format!("invalid day of month: `{}`", day)),
                             Some(item) => *item += money,
                         }
                     }
@@ -121,7 +117,7 @@ pub fn main(
             },
 
             _ => {
-                return Err(format!("unknown key: `{}`", bill_key).into());
+                return Err(format!("unknown key: `{}`", bill_key));
             }
         }
     }
