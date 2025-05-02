@@ -1,8 +1,7 @@
 mod cmdline;
 mod parse_bill_data;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // TODO3 try and use something more appropriate (like a regular string)
+fn main() -> Result<(), String> {
     let (input_toml, year, month) = cmdline::parse()?;
 
     let (income, expenditures_monthly, expenditures_regular) =
