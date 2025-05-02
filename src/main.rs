@@ -1,6 +1,31 @@
 mod cmdline;
 mod parse_bill_toml;
 
+use colored::*; // cargo add colored
+
+macro_rules! print_columns_str {
+    ($col_day:expr, $col_exp_day:expr, $col_mpd_adapt:expr, $col_mpd_def:expr) => {
+        println!(
+            "{} | {} | {} | {}",
+            $col_day.truecolor(200, 200, 200),       // .red(),
+            $col_mpd_def.truecolor(150, 150, 0),     // .yellow()
+            $col_exp_day.truecolor(150, 20, 20),     // .green(),
+            $col_mpd_adapt.truecolor(100, 100, 255)  //.blue(),
+        );
+    };
+}
+
+macro_rules! print_columns_num {
+    ($col_day:expr, $col_exp_day:expr, $col_mpd_adapt:expr, $col_mpd_def:expr) => {
+        print_columns_str!(
+            format!("{:2}", $col_day),
+            format!("{:6.2}", $col_exp_day),
+            format!("{:7.2}", $col_mpd_adapt),
+            format!("{:4.2}", $col_mpd_def)
+        );
+    };
+}
+
 fn main() -> Result<(), String> {
     let (input_toml, year, month) = cmdline::parse()?;
 
@@ -16,8 +41,14 @@ fn main() -> Result<(), String> {
 
     let mut money_left = income;
 
-    // TODO2 colored print
-    println!("day | expenditures | money-per-day-adaptive | money-per-day-default");
+    // TODO maybe give adaptive a different color based on weather it's an improvement or a regression
+    print_columns_str!(
+        "day",
+        "expenditures",
+        "money-per-day-adaptive",
+        "money-per-day-default"
+    );
+
     for (day, expenditure_day) in expenditures_regular.iter().enumerate() {
         let day = day + 1;
         let day_f32 = day as f32;
@@ -29,8 +60,11 @@ fn main() -> Result<(), String> {
 
         money_left -= expenditure_day;
 
-        println!(
-            "{day:2} | {expenditure_day:6.2} | {money_per_day_adaptive:7.2} | {money_per_day_default:4.2}"
+        print_columns_num!(
+            day,
+            expenditure_day,
+            money_per_day_adaptive,
+            money_per_day_default
         );
     }
 
