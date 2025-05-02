@@ -12,7 +12,7 @@ macro_rules! print_columns_str {
     ($day:expr, $exp_day:expr, $mpd_adapt:expr, $mpd_adapt_progress:expr, $mpd_def:expr, $median:expr, $apl_med:expr) => {
         println!(
             " {} {} {} {} {} {}",
-            $day.truecolor(200, 200, 200),   // .red(),
+            $day.truecolor(200, 200, 200),
             $mpd_def.truecolor(150, 150, 0), // .yellow()
             $exp_day.truecolor(150, 20, 20), // .green(),
             match $mpd_adapt_progress {
@@ -20,7 +20,7 @@ macro_rules! print_columns_str {
                 Progress::Good => $mpd_adapt.truecolor(100, 200, 100),
                 Progress::Bad => $mpd_adapt.truecolor(200, 100, 100),
             },
-            $median.truecolor(100, 100, 255),
+            $median.truecolor(100, 100, 210),
             $apl_med
         );
     };
@@ -40,16 +40,37 @@ macro_rules! print_columns_num {
     };
 }
 
+fn col_day(str: &str) -> String {
+    format!("{}", str.truecolor(200, 200, 200)) // .red()
+}
+
+fn col_mpds(str: &str) -> String {
+    format!("{}", str.truecolor(150, 150, 0))
+}
+
+fn col_mpda_good(str: &str) -> String {
+    format!("{}", str.truecolor(100, 200, 100))
+}
+
+fn col_mpda_bad(str: &str) -> String {
+    format!("{}", str.truecolor(200, 100, 100))
+}
+
+fn col_exp(str: &str) -> String {
+    format!("{}", str.truecolor(150, 20, 20))
+}
+
+fn col_ema(str: &str) -> String {
+    format!("{}", str.truecolor(100, 100, 210))
+}
+
 fn calc_median(expenditures: &[f32]) -> f32 {
     let mut ordered = expenditures.to_vec(); // I hate this, but whatever, we're working with just floats
     ordered.sort_by(|a, b| a.partial_cmp(b).unwrap());
 
     let items_to_remove = ordered.len() / 4; // we'll remove the highest 1/4 and the lowest 1/4
-    // println!("dbg: {}", ordered.len());
     ordered.drain(ordered.len() - items_to_remove..);
-    // println!("dbg: {}", ordered.len());
     ordered.drain(..items_to_remove);
-    // println!("dbg: {}", ordered.len());
 
     ordered.iter().sum::<f32>() / ordered.len() as f32
 }
@@ -61,21 +82,19 @@ fn main() -> Result<(), String> {
         parse_bill_toml::main(input_toml, year, month)?;
     let days_in_month = days_in_month as f32;
 
-    // TODO4? put in new module
+    // TODO4 this shit needs to be contained in a new module
 
-    println!("MPD -> money-per-day");
-    println!("EXP -> expenditures");
-    println!("MAV -> median-average");
-    println!();
-    print_columns_str!(
-        "day",
-        "EXP",
-        "MPD-adaptive",
-        Progress::Good,
-        "MPD-default",
-        "EXP-MAV",
-        "MPDD-apl-EXPMAV"
+    println!("{}", col_day("day"));
+    println!("{}", col_mpds("money-per-day-static"));
+    println!("{}", col_exp("expenditures"));
+    println!(
+        "{} {}",
+        col_mpda_good("money-per-day-adaptive good"),
+        col_mpda_bad("bad")
     );
+    println!("{}", col_ema("expenditures-median-average"));
+    println!("MPDD-apl-EMA");
+    println!();
 
     // TODO0 names are getting complex, could be cool if we could color code each word
 
