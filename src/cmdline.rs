@@ -14,7 +14,7 @@ pub fn parse() -> Result<(String, u32, u32), Box<dyn std::error::Error>> {
     let input_toml = args.bills_toml;
 
     let filename = Path::new(&input_toml).file_name().unwrap();
-    let filename = filename.to_str().unwrap(); // `to_str` fail if invalid utf-8 ; `to_string_lossy` replaces invalid utf-8 characters
+    let filename = filename.to_str().unwrap(); // `to_str` fails if invalid utf-8 ; `to_string_lossy` replaces invalid utf-8 characters
 
     let year_and_month = filename
         .strip_suffix(".toml")
