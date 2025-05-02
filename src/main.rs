@@ -11,7 +11,7 @@ enum Progress {
 macro_rules! print_columns_str {
     ($col_day:expr, $col_exp_day:expr, $col_mpd_adapt:expr, $col_mpd_adapt_progress:expr, $col_mpd_def:expr) => {
         println!(
-            "{} | {} | {} | {}",
+            "| {} | {} | {} | {} |",
             $col_day.truecolor(200, 200, 200),   // .red(),
             $col_mpd_def.truecolor(150, 150, 0), // .yellow()
             $col_exp_day.truecolor(150, 20, 20), // .green(),
