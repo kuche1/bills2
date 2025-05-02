@@ -45,6 +45,18 @@ fn main() -> Result<(), String> {
 
     // TODO4? put in new module
 
+    println!("MPD -> money-per-day");
+
+    print_columns_str!(
+        "day",
+        "expenditures",
+        "MPD-adaptive",
+        Progress::Good,
+        "MPD-default"
+    );
+
+    // TODO0 also calculate median for each day
+
     let income = income - expenditures_monthly;
 
     let money_per_day_default = income / days_in_month;
@@ -52,15 +64,6 @@ fn main() -> Result<(), String> {
     let mut money_left = income;
 
     let mut last_money_per_day_adaptive: f32 = 0.0;
-
-    // TODO maybe give adaptive a different color based on weather it's an improvement or a regression
-    print_columns_str!(
-        "day",
-        "expenditures",
-        "money-per-day-adaptive",
-        Progress::Good,
-        "money-per-day-default"
-    );
 
     for (day, expenditure_day) in expenditures_regular.iter().enumerate() {
         let day = day + 1;
