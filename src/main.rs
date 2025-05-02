@@ -2,6 +2,7 @@ use chrono; // cargo add chrono
 use chrono::Datelike;
 use std::fs;
 use toml::Table; // cargo add toml
+use toml::Value;
 
 mod cmdline;
 
@@ -35,21 +36,100 @@ impl NaiveDateExt for chrono::NaiveDate {
 }
 ///////////// ^^^^^
 
+fn toml_sum(value: Value) -> f32 {
+    match value {
+        Value::String(_) | Value::Boolean(_) | Value::Datetime(_) => {
+            panic!("unsupported value: `{value}`") // TODO2 make into actual proper error
+        }
+
+        Value::Integer(v) => return v as f32,
+
+        Value::Float(v) => return v as f32,
+
+        Value::Array(v) => {
+            let mut sum: f32 = 0.0;
+            for value in v {
+                sum += toml_sum(value);
+            }
+            return sum;
+        }
+
+        Value::Table(v) => {
+            let mut sum: f32 = 0.0;
+            for (_key, value) in v {
+                sum += toml_sum(value);
+            }
+            return sum;
+        }
+    }
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let (input_toml, year, month) = cmdline::parse()?;
 
-    // TODO0 put this whole reading thing into it's own module
-    // TODO0 maybe even put a new file for getting today
+    // TODO1 put this whole reading thing into it's own module
+    // TODO1 maybe even put a new file for getting today
 
     let date = chrono::NaiveDate::from_ymd_opt(year.try_into().unwrap(), month, 1).unwrap();
     let days_in_month = date.days_in_month();
+    let days_in_month_usize: usize = days_in_month.try_into().unwrap();
 
     let bills_data =
         fs::read_to_string(&input_toml).map_err(|_| format!("can't open file `{}`", input_toml))?;
 
     let bills_data = bills_data.parse::<Table>().unwrap(); // I think there is a way to "desearialise" the file using lib features
 
-    dbg!(bills_data);
+    let mut income: f32 = 0.0;
+    let mut expenditures_monthly: f32 = 0.0;
+    let mut expenditures_regular = vec![0.0_f32; days_in_month_usize];
+
+    for (bill_key, bill_value) in bills_data {
+        match bill_key.as_str() {
+            "INCOME" => {
+                income += toml_sum(bill_value);
+            }
+
+            "EXPENDITURES-MONTHLY" => {
+                expenditures_monthly += toml_sum(bill_value);
+            }
+
+            "EXPENDITURES-REGULAR" => match bill_value {
+                Value::String(_)
+                | Value::Boolean(_)
+                | Value::Datetime(_)
+                | Value::Integer(_)
+                | Value::Float(_)
+                | Value::Array(_) => {
+                    panic!("unsupported value: {bill_value}"); // TODO2 use an actual error
+                }
+
+                Value::Table(value) => {
+                    for (day, money) in value {
+                        let day: usize = day
+                            .parse()
+                            .expect(&format!("`{}` is not a valid month day", day)); // TODO2 use actual error
+
+                        let idx = day.checked_add_signed(-1).unwrap(); // TODO2 use actual error
+
+                        let money = toml_sum(money);
+
+                        match expenditures_regular.get_mut(idx) {
+                            None => return Err(format!("invalid day of month: `{}`", day).into()),
+                            Some(item) => *item += money,
+                        }
+                    }
+                }
+            },
+
+            _ => {
+                return Err(format!("unknown key: `{}`", bill_key).into());
+            }
+        }
+    }
+
+    dbg!(income);
+    dbg!(expenditures_monthly);
+    dbg!(expenditures_regular);
 
     Ok(())
 }
