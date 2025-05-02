@@ -21,7 +21,7 @@ macro_rules! print_columns_str {
                 Progress::Bad => $mpd_adapt.truecolor(200, 100, 100),
             },
             $median.truecolor(100, 100, 210),
-            $apl_med
+            $apl_med.truecolor(255, 255, 0)
         );
     };
 }
@@ -64,6 +64,10 @@ fn col_ema(str: &str) -> String {
     format!("{}", str.truecolor(100, 100, 210))
 }
 
+fn col_apds_apl_ema(str: &str) -> String {
+    format!("{}", str.truecolor(255, 255, 0))
+}
+
 fn calc_median(expenditures: &[f32]) -> f32 {
     let mut ordered = expenditures.to_vec(); // I hate this, but whatever, we're working with just floats
     ordered.sort_by(|a, b| a.partial_cmp(b).unwrap());
@@ -93,14 +97,19 @@ fn main() -> Result<(), String> {
         col_mpda_bad("bad")
     );
     println!("{}", col_ema("expenditures-median-average"));
-    println!("MPDD-apl-EMA");
+    println!(
+        "{}{}{}",
+        col_mpds("MPDS"),
+        col_apds_apl_ema("-applied-to-"),
+        col_ema("EMA")
+    );
     println!();
 
     // TODO0 names are getting complex, could be cool if we could color code each word
 
     let income = income - expenditures_monthly;
 
-    let money_per_day_default = income / days_in_month;
+    let money_per_day_static = income / days_in_month;
 
     let mut money_left = income;
 
@@ -128,9 +137,9 @@ fn main() -> Result<(), String> {
             } else {
                 Progress::Good
             },
-            money_per_day_default,
+            money_per_day_static,
             median,
-            money_per_day_default - median
+            money_per_day_static - median
         );
 
         last_money_per_day_adaptive = money_per_day_adaptive;
