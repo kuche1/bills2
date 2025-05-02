@@ -11,7 +11,7 @@ enum Progress {
 macro_rules! print_columns_str {
     ($day:expr, $exp_day:expr, $mpd_adapt:expr, $mpd_adapt_progress:expr, $mpd_def:expr, $median:expr, $apl_med:expr) => {
         println!(
-            "| {} | {} | {} | {} | {} | {} |",
+            " {} {} {} {} {} {}",
             $day.truecolor(200, 200, 200),   // .red(),
             $mpd_def.truecolor(150, 150, 0), // .yellow()
             $exp_day.truecolor(150, 20, 20), // .green(),
@@ -29,13 +29,13 @@ macro_rules! print_columns_str {
 macro_rules! print_columns_num {
     ($day:expr, $exp_day:expr, $mpd_adapt:expr, $mpd_adapt_progress:expr, $mpd_def:expr, $median:expr, $apl_med:expr) => {
         print_columns_str!(
-            format!("{:2}", $day),
-            format!("{:6.2}", $exp_day),
-            format!("{:7.2}", $mpd_adapt),
+            format!("|{:2}|", $day),
+            format!("|{:6.2}|", $exp_day),
+            format!("|{:7.2}|", $mpd_adapt),
             $mpd_adapt_progress,
-            format!("{:4.2}", $mpd_def),
-            format!("{:6.2}", $median),
-            format!("{:7.2}", $apl_med)
+            format!("|{:4.2}|", $mpd_def),
+            format!("|{:6.2}|", $median),
+            format!("|{:7.2}|", $apl_med)
         );
     };
 }
