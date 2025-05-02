@@ -3,42 +3,42 @@ mod parse_bill_toml;
 
 use colored::*; // cargo add colored
 
-enum Progress {
-    Good,
-    Bad,
-}
+// enum Progress {
+//     Good,
+//     Bad,
+// }
 
-macro_rules! print_columns_str {
-    ($day:expr, $exp_day:expr, $mpd_adapt:expr, $mpd_adapt_progress:expr, $mpd_def:expr, $median:expr, $apl_med:expr) => {
-        println!(
-            " {} {} {} {} {} {}",
-            $day.truecolor(200, 200, 200),
-            $mpd_def.truecolor(150, 150, 0), // .yellow()
-            $exp_day.truecolor(150, 20, 20), // .green(),
-            match $mpd_adapt_progress {
-                // .truecolor(100, 100, 255) //.blue()
-                Progress::Good => $mpd_adapt.truecolor(100, 200, 100),
-                Progress::Bad => $mpd_adapt.truecolor(200, 100, 100),
-            },
-            $median.truecolor(100, 100, 210),
-            $apl_med.truecolor(255, 255, 0)
-        );
-    };
-}
+// macro_rules! print_columns_str {
+//     ($day:expr, $exp_day:expr, $mpd_adapt:expr, $mpd_adapt_progress:expr, $mpd_def:expr, $median:expr, $apl_med:expr) => {
+//         println!(
+//             " {} {} {} {} {} {}",
+//             $day.truecolor(200, 200, 200),
+//             $mpd_def.truecolor(150, 150, 0), // .yellow()
+//             $exp_day.truecolor(150, 20, 20), // .green(),
+//             match $mpd_adapt_progress {
+//                 // .truecolor(100, 100, 255) //.blue()
+//                 Progress::Good => $mpd_adapt.truecolor(100, 200, 100),
+//                 Progress::Bad => $mpd_adapt.truecolor(200, 100, 100),
+//             },
+//             $median.truecolor(100, 100, 210),
+//             $apl_med.truecolor(255, 255, 0)
+//         );
+//     };
+// }
 
-macro_rules! print_columns_num {
-    ($day:expr, $exp_day:expr, $mpd_adapt:expr, $mpd_adapt_progress:expr, $mpd_def:expr, $median:expr, $apl_med:expr) => {
-        print_columns_str!(
-            format!("|{:2}|", $day),
-            format!("|{:6.2}|", $exp_day),
-            format!("|{:7.2}|", $mpd_adapt),
-            $mpd_adapt_progress,
-            format!("|{:4.2}|", $mpd_def),
-            format!("|{:6.2}|", $median),
-            format!("|{:7.2}|", $apl_med)
-        );
-    };
-}
+// macro_rules! print_columns_num {
+//     ($day:expr, $exp_day:expr, $mpd_adapt:expr, $mpd_adapt_progress:expr, $mpd_def:expr, $median:expr, $apl_med:expr) => {
+//         print_columns_str!(
+//             format!("|{:2}|", $day),
+//             format!("|{:6.2}|", $exp_day),
+//             format!("|{:7.2}|", $mpd_adapt),
+//             $mpd_adapt_progress,
+//             format!("|{:4.2}|", $mpd_def),
+//             format!("|{:6.2}|", $median),
+//             format!("|{:7.2}|", $apl_med)
+//         );
+//     };
+// }
 
 fn col_day(str: &str) -> String {
     format!("{}", str.truecolor(200, 200, 200)) // .red()
@@ -64,8 +64,8 @@ fn col_ema(str: &str) -> String {
     format!("{}", str.truecolor(100, 100, 210))
 }
 
-fn col_apds_apl_ema(str: &str) -> String {
-    format!("{}", str.truecolor(255, 255, 0))
+fn col_mpds_apl_ema(str: &str) -> String {
+    format!("{}", str.truecolor(200, 150, 150))
 }
 
 fn calc_median(expenditures: &[f32]) -> f32 {
@@ -100,7 +100,7 @@ fn main() -> Result<(), String> {
     println!(
         "{}{}{}",
         col_mpds("MPDS"),
-        col_apds_apl_ema("-applied-to-"),
+        col_mpds_apl_ema("-applied-to-"),
         col_ema("EMA")
     );
     println!();
@@ -126,20 +126,24 @@ fn main() -> Result<(), String> {
 
         money_left -= expenditure_day;
 
-        let median = calc_median(&expenditures_regular[..day]);
+        let expenditure_median = calc_median(&expenditures_regular[..day]);
 
-        print_columns_num!(
-            day,
-            expenditure_day,
-            money_per_day_adaptive,
-            if last_money_per_day_adaptive > money_per_day_adaptive {
-                Progress::Bad
-            } else {
-                Progress::Good
-            },
-            money_per_day_static,
-            median,
-            money_per_day_static - median
+        let mpds_minus_median = money_per_day_static - expenditure_median;
+
+        let col_mpda = if last_money_per_day_adaptive > money_per_day_adaptive {
+            col_mpda_bad
+        } else {
+            col_mpda_good
+        };
+
+        println!(
+            "{} {} {} {} {} {}",
+            col_day(&format!("|{day:2}|")),
+            col_mpds(&format!("|{money_per_day_static:5.2}|")),
+            col_exp(&format!("|{expenditure_day:6.2}|")),
+            col_mpda(&format!("|{money_per_day_adaptive:7.2}|")),
+            col_ema(&format!("|{expenditure_median:6.2}|")),
+            col_mpds_apl_ema(&format!("|{mpds_minus_median:7.2}|")),
         );
 
         last_money_per_day_adaptive = money_per_day_adaptive;
