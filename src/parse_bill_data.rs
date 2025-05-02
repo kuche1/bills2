@@ -1,3 +1,5 @@
+// TODO9 maybe put a new module for getting today
+
 use chrono; // cargo add chrono
 use chrono::Datelike;
 use std::fs;
@@ -67,9 +69,6 @@ pub fn main(
     year: u32,
     month: u32,
 ) -> Result<(f32, f32, Vec<f32>), Box<dyn std::error::Error>> {
-    // TODO1 put this whole reading thing into it's own module
-    // TODO1 maybe even put a new file for getting today
-
     let date = chrono::NaiveDate::from_ymd_opt(year.try_into().unwrap(), month, 1).unwrap();
     let days_in_month = date.days_in_month();
     let days_in_month_usize: usize = days_in_month.try_into().unwrap();
