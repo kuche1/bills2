@@ -9,9 +9,9 @@ enum Progress {
 }
 
 macro_rules! print_columns_str {
-    ($day:expr, $exp_day:expr, $mpd_adapt:expr, $mpd_adapt_progress:expr, $mpd_def:expr, $median:expr) => {
+    ($day:expr, $exp_day:expr, $mpd_adapt:expr, $mpd_adapt_progress:expr, $mpd_def:expr, $median:expr, $apl_med:expr) => {
         println!(
-            "| {} | {} | {} | {} | {} |",
+            "| {} | {} | {} | {} | {} | {} |",
             $day.truecolor(200, 200, 200),   // .red(),
             $mpd_def.truecolor(150, 150, 0), // .yellow()
             $exp_day.truecolor(150, 20, 20), // .green(),
@@ -20,20 +20,22 @@ macro_rules! print_columns_str {
                 Progress::Good => $mpd_adapt.truecolor(100, 200, 100),
                 Progress::Bad => $mpd_adapt.truecolor(200, 100, 100),
             },
-            $median.truecolor(100, 100, 255)
+            $median.truecolor(100, 100, 255),
+            $apl_med
         );
     };
 }
 
 macro_rules! print_columns_num {
-    ($day:expr, $exp_day:expr, $mpd_adapt:expr, $mpd_adapt_progress:expr, $mpd_def:expr, $median:expr) => {
+    ($day:expr, $exp_day:expr, $mpd_adapt:expr, $mpd_adapt_progress:expr, $mpd_def:expr, $median:expr, $apl_med:expr) => {
         print_columns_str!(
             format!("{:2}", $day),
             format!("{:6.2}", $exp_day),
             format!("{:7.2}", $mpd_adapt),
             $mpd_adapt_progress,
             format!("{:4.2}", $mpd_def),
-            format!("{:6.2}", $median)
+            format!("{:6.2}", $median),
+            format!("{:7.2}", $apl_med)
         );
     };
 }
@@ -71,10 +73,11 @@ fn main() -> Result<(), String> {
         "MPD-adaptive",
         Progress::Good,
         "MPD-default",
-        "EXP-MAV"
+        "EXP-MAV",
+        "MPDD-apl-EXPMAV"
     );
 
-    // TODO0 also calculate median for each day
+    // TODO0 names are getting complex, could be cool if we could color code each word
 
     let income = income - expenditures_monthly;
 
@@ -107,7 +110,8 @@ fn main() -> Result<(), String> {
                 Progress::Good
             },
             money_per_day_default,
-            median
+            median,
+            money_per_day_default - median
         );
 
         last_money_per_day_adaptive = money_per_day_adaptive;
