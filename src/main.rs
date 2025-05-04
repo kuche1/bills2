@@ -101,7 +101,7 @@ fn main() -> Result<(), String> {
         col_money_today_precalc_monthly("x money-"),
         col_day("today"),
         col_money_today_precalc_monthly(
-            "-precalc-monthly ------------> how much money do we have each day, on average"
+            "-precalc-monthly ------------> how much money are we supposed to have each day, on average"
         )
     );
     println!(
