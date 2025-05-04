@@ -94,6 +94,12 @@ fn main() -> Result<(), String> {
 
     println!("{}", col_day("x day"));
     println!(
+        "{}{}{}",
+        col_money_today_precalc_monthly("x money-"),
+        col_day("today"),
+        col_money_today_precalc_monthly("-precalc-monthly")
+    );
+    println!(
         "{}{}",
         col_expenditures("x expenditures-"),
         col_day("today")
@@ -104,16 +110,9 @@ fn main() -> Result<(), String> {
         col_day("so-far")
     );
     println!(
-        "{}{}{}",
-        col_money_today_precalc_monthly("x money-"),
-        col_day("today"),
-        col_money_today_precalc_monthly("-precalc-monthly")
-    );
-    println!(
-        "{}{}{}",
+        "{}{}",
         col_money_today_default("x money-"),
         col_day("today"),
-        col_money_today_default("-precalc-daily"),
     );
     println!(
         "{}{}{}{} {} {}",
@@ -169,9 +168,9 @@ fn main() -> Result<(), String> {
         println!(
             "{} {} {} {} {} {} {}",
             col_day(&format!("|{day:2}|")),
+            col_money_today_precalc_monthly(&format!("|{money_per_day_static:5.2}|")),
             col_expenditures(&format!("|{expenditure_day:6.2}|")),
             col_ema(&format!("|{expenditure_median:6.2}|")),
-            col_money_today_precalc_monthly(&format!("|{money_per_day_static:5.2}|")),
             col_money_today_default(&format!("|{money_today_default:7.2}|")),
             col_mpda(&format!("|{money_per_day_adaptive:7.2}|")), // TODO1 would be cool if we added more than just 2 options for color
             col_median_applied(&format!("|{median_applied:7.2}|")),
