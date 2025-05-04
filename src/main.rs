@@ -64,12 +64,12 @@ fn col_ema(str: &str) -> String {
     format!("{}", str.truecolor(200, 80, 20))
 }
 
-fn col_median_applied(str: &str) -> String {
-    format!("{}", str.truecolor(200, 150, 150))
-}
-
 fn col_money_today_default(str: &str) -> String {
     format!("{}", str.truecolor(120, 120, 220))
+}
+
+fn col_money_at_end_of_month_based_on_median(str: &str) -> String {
+    format!("{}", str.truecolor(200, 150, 150))
 }
 
 fn calc_median(expenditures: &[f32]) -> f32 {
@@ -92,43 +92,59 @@ fn main() -> Result<(), String> {
 
     // TODO4 this shit needs to be contained in a new module
 
-    println!("{}", col_day("x day"));
+    println!(
+        "{}",
+        col_day("x day ------------------------------------> which day of the month it is")
+    );
     println!(
         "{}{}{}",
         col_money_today_precalc_monthly("x money-"),
         col_day("today"),
-        col_money_today_precalc_monthly("-precalc-monthly")
+        col_money_today_precalc_monthly(
+            "-precalc-monthly ------------> how much money do we have each day, on average"
+        )
     );
     println!(
-        "{}{}",
-        col_expenditures("x expenditures-"),
-        col_day("today")
-    );
-    println!(
-        "{}{}",
-        col_ema("x expenditures-median-average-"),
-        col_day("so-far")
-    );
-    println!(
-        "{}{}",
+        "{}{}{}{}{}",
         col_money_today_default("x money-"),
-        col_day("today"),
+        col_day("this-morning"),
+        col_money_today_default("-"),
+        col_expenditures("pre-applied"),
+        col_money_today_default(
+            " ---------> how much money did we have this morning (before spending anything)"
+        ),
     );
     println!(
-        "{}{}{}{} {} {}",
+        "{}{}{}",
+        col_expenditures("x expenditures-"),
+        col_day("today"),
+        col_expenditures(" ---------------------> how much money did we spend today"),
+    );
+    println!(
+        "{}{}{}",
+        col_ema("x expenditures-median-average-"),
+        col_day("so-far"),
+        col_ema(" -----> until this day, what is our median average spending per day"),
+    );
+    println!(
+        "{}{}{}{} {} {} {}",
         col_mpda_good("x money-"),
         col_money_today_default("today"),
         col_mpda_good("-"),
         col_expenditures("applied"),
         col_mpda_good("good"),
         col_mpda_bad("bad"),
+        col_mpda_good("-----------> how much money are we left with today"),
     );
     println!(
-        "{}{}{}{}",
-        col_median_applied("x money-"),
-        col_money_today_default("today"),
-        col_median_applied("-"),
-        col_ema("applied"),
+        "{}{}{}{}{}",
+        col_money_at_end_of_month_based_on_median("x money"),
+        col_day("-at-end-of-month-"),
+        col_money_at_end_of_month_based_on_median("based-on-"),
+        col_ema("median"),
+        col_money_at_end_of_month_based_on_median(
+            " --> how much money would we have at the end of the month, based on the median average"
+        ),
     );
     println!();
 
@@ -144,7 +160,7 @@ fn main() -> Result<(), String> {
         let day = day + 1;
         let day_f32 = day as f32;
 
-        let days_left = days_in_month - day_f32 + 1.0;
+        let days_left = days_in_month - day_f32 + 1.0; // including today
 
         let money_today_default = money_left / days_left;
 
@@ -154,7 +170,8 @@ fn main() -> Result<(), String> {
 
         let expenditure_median = calc_median(&expenditures_regular[..day]);
 
-        let median_applied = money_today_default - expenditure_median;
+        let money_at_end_of_month_based_on_median =
+            money_left - expenditure_median * (days_left - 1.0);
 
         let col_mpda = if (last_money_per_day_adaptive > money_per_day_adaptive)
             || (money_per_day_adaptive < 0.0)
@@ -169,11 +186,13 @@ fn main() -> Result<(), String> {
             "{} {} {} {} {} {} {}",
             col_day(&format!("|{day:2}|")),
             col_money_today_precalc_monthly(&format!("|{money_per_day_static:5.2}|")),
+            col_money_today_default(&format!("|{money_today_default:7.2}|")),
             col_expenditures(&format!("|{expenditure_day:6.2}|")),
             col_ema(&format!("|{expenditure_median:6.2}|")),
-            col_money_today_default(&format!("|{money_today_default:7.2}|")),
-            col_mpda(&format!("|{money_per_day_adaptive:7.2}|")), // TODO1 would be cool if we added more than just 2 options for color
-            col_median_applied(&format!("|{median_applied:7.2}|")),
+            col_mpda(&format!("|{money_per_day_adaptive:7.2}|")),
+            col_money_at_end_of_month_based_on_median(&format!(
+                "|{money_at_end_of_month_based_on_median:8.2}|"
+            )),
         );
 
         last_money_per_day_adaptive = money_per_day_adaptive;
