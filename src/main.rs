@@ -45,7 +45,7 @@ fn col_day(str: &str) -> String {
 }
 
 fn col_money_today_precalc_monthly(str: &str) -> String {
-    format!("{}", str.truecolor(150, 150, 0))
+    format!("{}", str.truecolor(160, 160, 20))
 }
 
 fn col_mpda_good(str: &str) -> String {
@@ -61,7 +61,7 @@ fn col_expenditures(str: &str) -> String {
 }
 
 fn col_ema(str: &str) -> String {
-    format!("{}", str.truecolor(100, 100, 230))
+    format!("{}", str.truecolor(200, 80, 20))
 }
 
 fn col_median_applied(str: &str) -> String {
@@ -69,7 +69,7 @@ fn col_median_applied(str: &str) -> String {
 }
 
 fn col_money_today_default(str: &str) -> String {
-    format!("{}", str.truecolor(255, 150, 150))
+    format!("{}", str.truecolor(120, 120, 220))
 }
 
 fn calc_median(expenditures: &[f32]) -> f32 {
