@@ -44,7 +44,7 @@ fn col_day(str: &str) -> String {
     format!("{}", str.truecolor(200, 200, 200)) // .red()
 }
 
-fn col_mpds(str: &str) -> String {
+fn col_money_today_precalc_monthly(str: &str) -> String {
     format!("{}", str.truecolor(150, 150, 0))
 }
 
@@ -56,16 +56,20 @@ fn col_mpda_bad(str: &str) -> String {
     format!("{}", str.truecolor(200, 100, 100))
 }
 
-fn col_exp(str: &str) -> String {
-    format!("{}", str.truecolor(150, 20, 20))
+fn col_expenditures(str: &str) -> String {
+    format!("{}", str.truecolor(165, 20, 20))
 }
 
 fn col_ema(str: &str) -> String {
-    format!("{}", str.truecolor(100, 100, 210))
+    format!("{}", str.truecolor(100, 100, 230))
 }
 
-fn col_mpds_apl_ema(str: &str) -> String {
+fn col_median_applied(str: &str) -> String {
     format!("{}", str.truecolor(200, 150, 150))
+}
+
+fn col_money_today_default(str: &str) -> String {
+    format!("{}", str.truecolor(255, 150, 150))
 }
 
 fn calc_median(expenditures: &[f32]) -> f32 {
@@ -88,20 +92,44 @@ fn main() -> Result<(), String> {
 
     // TODO4 this shit needs to be contained in a new module
 
-    println!("{}", col_day("day"));
-    println!("{}", col_mpds("money-per-day-static"));
-    println!("{}", col_exp("expenditures"));
+    println!("{}", col_day("x day"));
     println!(
-        "{} {}",
-        col_mpda_good("money-per-day-adaptive good"),
-        col_mpda_bad("bad")
+        "{}{}",
+        col_expenditures("x expenditures-"),
+        col_day("today")
     );
-    println!("{}", col_ema("expenditures-median-average"));
+    println!(
+        "{}{}",
+        col_ema("x expenditures-median-average-"),
+        col_day("so-far")
+    );
     println!(
         "{}{}{}",
-        col_mpds("MPDS"),
-        col_mpds_apl_ema("-applied-to-"),
-        col_ema("EMA")
+        col_money_today_precalc_monthly("x money-"),
+        col_day("today"),
+        col_money_today_precalc_monthly("-precalc-monthly")
+    );
+    println!(
+        "{}{}{}",
+        col_money_today_default("x money-"),
+        col_day("today"),
+        col_money_today_default("-precalc-daily"),
+    );
+    println!(
+        "{}{}{}{} {} {}",
+        col_mpda_good("x money-"),
+        col_money_today_default("today"),
+        col_mpda_good("-"),
+        col_expenditures("applied"),
+        col_mpda_good("good"),
+        col_mpda_bad("bad"),
+    );
+    println!(
+        "{}{}{}{}",
+        col_median_applied("x money-"),
+        col_money_today_default("today"),
+        col_median_applied("-"),
+        col_ema("applied"),
     );
     println!();
 
@@ -119,14 +147,15 @@ fn main() -> Result<(), String> {
 
         let days_left = days_in_month - day_f32 + 1.0;
 
-        let money_per_day_adaptive = money_left / days_left;
-        let money_per_day_adaptive = money_per_day_adaptive - expenditure_day;
+        let money_today_default = money_left / days_left;
+
+        let money_per_day_adaptive = money_today_default - expenditure_day;
 
         money_left -= expenditure_day;
 
         let expenditure_median = calc_median(&expenditures_regular[..day]);
 
-        let mpds_minus_median = money_per_day_static - expenditure_median;
+        let median_applied = money_today_default - expenditure_median;
 
         let col_mpda = if (last_money_per_day_adaptive > money_per_day_adaptive)
             || (money_per_day_adaptive < 0.0)
@@ -138,13 +167,14 @@ fn main() -> Result<(), String> {
         };
 
         println!(
-            "{} {} {} {} {} {}",
+            "{} {} {} {} {} {} {}",
             col_day(&format!("|{day:2}|")),
-            col_mpds(&format!("|{money_per_day_static:5.2}|")),
-            col_exp(&format!("|{expenditure_day:6.2}|")),
-            col_mpda(&format!("|{money_per_day_adaptive:7.2}|")), // TODO1 would be cool if we added more than just 2 options for color
+            col_expenditures(&format!("|{expenditure_day:6.2}|")),
             col_ema(&format!("|{expenditure_median:6.2}|")),
-            col_mpds_apl_ema(&format!("|{mpds_minus_median:7.2}|")),
+            col_money_today_precalc_monthly(&format!("|{money_per_day_static:5.2}|")),
+            col_money_today_default(&format!("|{money_today_default:7.2}|")),
+            col_mpda(&format!("|{money_per_day_adaptive:7.2}|")), // TODO1 would be cool if we added more than just 2 options for color
+            col_median_applied(&format!("|{median_applied:7.2}|")),
         );
 
         last_money_per_day_adaptive = money_per_day_adaptive;
