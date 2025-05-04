@@ -105,8 +105,6 @@ fn main() -> Result<(), String> {
     );
     println!();
 
-    // TODO0 names are getting complex, could be cool if we could color code each word
-
     let income = income - expenditures_monthly;
 
     let money_per_day_static = income / days_in_month;
