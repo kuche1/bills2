@@ -154,7 +154,7 @@ fn main() -> Result<(), String> {
 
     let mut money_left = income;
 
-    let mut last_money_per_day_adaptive: f32 = 0.0;
+    // let mut last_money_per_day_adaptive: f32 = 0.0;
 
     for (day, expenditure_day) in expenditures_regular.iter().enumerate() {
         let day = day + 1;
@@ -173,9 +173,9 @@ fn main() -> Result<(), String> {
         let money_at_end_of_month_based_on_median =
             money_left - expenditure_median * (days_left - 1.0);
 
-        let col_mpda = if (last_money_per_day_adaptive > money_per_day_adaptive)
+        let col_mpda = if false //(last_money_per_day_adaptive > money_per_day_adaptive)
             || (money_per_day_adaptive < 0.0)
-            || (money_per_day_adaptive < money_per_day_static - expenditure_day)
+            || (money_today_default < money_per_day_static)
         {
             col_mpda_bad
         } else {
@@ -195,7 +195,7 @@ fn main() -> Result<(), String> {
             )),
         );
 
-        last_money_per_day_adaptive = money_per_day_adaptive;
+        // last_money_per_day_adaptive = money_per_day_adaptive;
     }
 
     Ok(())
