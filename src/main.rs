@@ -1,3 +1,5 @@
+// todo ako moje razlikite po-burzo da izdurpvat, a ne da chakat do kraq na meseca
+
 mod cmdline;
 mod parse_bill_toml;
 
@@ -187,7 +189,7 @@ fn main() -> Result<(), String> {
             col_day(&format!("|{day:2}|")),
             col_money_today_precalc_monthly(&format!("|{money_per_day_static:5.2}|")),
             col_money_today_default(&format!("|{money_today_default:7.2}|")),
-            col_expenditures(&format!("|{expenditure_day:6.2}|")),
+            col_expenditures(&format!("|{expenditure_day:7.2}|")),
             col_ema(&format!("|{expenditure_median:6.2}|")),
             col_mpda(&format!("|{money_per_day_adaptive:7.2}|")),
             col_money_at_end_of_month_based_on_median(&format!(
